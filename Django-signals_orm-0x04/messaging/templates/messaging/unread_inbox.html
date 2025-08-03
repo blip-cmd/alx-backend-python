@@ -1,0 +1,14 @@
+{% extends 'messaging/base.html' %} {% block content %}
+<h2>Unread Messages</h2>
+<ul>
+  {% for message in unread_messages %}
+  <li>
+    <strong>From:</strong> {{ message.sender.username }}<br />
+    <strong>Content:</strong> {{ message.content }}<br />
+    <small>{{ message.timestamp }}</small>
+  </li>
+  {% empty %}
+  <li>No unread messages.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

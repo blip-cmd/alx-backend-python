@@ -8,6 +8,7 @@ urlpatterns = [
     path("", views.message_list, name="message_list"),
     path("send/", views.send_message, name="send_message"),
     path("notifications/", views.notifications_list, name="notifications"),
+    path("unread-inbox/", views.unread_inbox, name="unread_inbox"),
     # User management
     path("delete-account/", views.delete_user, name="delete_user"),
     # Message detail and editing

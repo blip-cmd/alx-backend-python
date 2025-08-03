@@ -288,3 +288,29 @@ def threaded_conversation(request, message_id):
         "threaded_replies": threaded_replies,
     }
     return render(request, "messaging/threaded_conversation.html", context)
+
+
+@login_required
+def unread_messages(request):
+    """
+    Display a list of unread messages for the current user.
+    """
+    unread_msgs = Message.unread.for_user(request.user)
+    context = {
+        "unread_messages": unread_msgs,
+        "user": request.user,
+    }
+    return render(request, "messaging/unread_messages.html", context)
+
+
+@login_required
+def unread_inbox(request):
+    """
+    Display only unread messages in the user's inbox.
+    """
+    unread_messages = Message.unread.for_user(request.user)
+    context = {
+        "unread_messages": unread_messages,
+        "user": request.user,
+    }
+    return render(request, "messaging/unread_inbox.html", context)

@@ -3,6 +3,15 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 
+class UnreadMessagesManager(models.Manager):
+    def for_user(self, user):
+        return (
+            self.get_queryset()
+            .filter(receiver=user, read=False)
+            .only("id", "sender", "content", "timestamp")
+        )
+
+
 class Message(models.Model):
     """
     Model representing a message sent between users.
@@ -27,6 +36,9 @@ class Message(models.Model):
     edited = models.BooleanField(
         default=False, help_text="Whether the message has been edited"
     )
+    read = models.BooleanField(
+        default=False, help_text="Whether the message has been read"
+    )
     parent_message = models.ForeignKey(
         "self",
         null=True,
@@ -35,6 +47,11 @@ class Message(models.Model):
         related_name="replies",
         help_text="The parent message this message is replying to",
     )
+
+    # Default manager
+    objects = models.Manager()
+    # Custom manager for unread messages
+    unread = UnreadMessagesManager()
 
     class Meta:
         ordering = ["-timestamp"]
