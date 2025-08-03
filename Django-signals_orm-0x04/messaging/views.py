@@ -7,10 +7,12 @@ from django.contrib.auth.models import User
 from django.contrib.auth import logout
 from django.contrib import messages
 from django.db.models import Q, Prefetch
+from django.views.decorators.cache import cache_page
 from .models import Message, MessageHistory, Notification
 import json
 
 
+@cache_page(60)
 @login_required
 def message_list(request):
     """
