@@ -27,6 +27,14 @@ class Message(models.Model):
     edited = models.BooleanField(
         default=False, help_text="Whether the message has been edited"
     )
+    parent_message = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="replies",
+        help_text="The parent message this message is replying to",
+    )
 
     class Meta:
         ordering = ["-timestamp"]

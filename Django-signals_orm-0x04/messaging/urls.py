@@ -24,4 +24,10 @@ urlpatterns = [
         views.mark_notification_read,
         name="mark_notification_read",
     ),
+    # Threaded conversation
+    path(
+        "threaded/<int:message_id>/",
+        views.threaded_conversation,
+        name="threaded_conversation",
+    ),
 ]

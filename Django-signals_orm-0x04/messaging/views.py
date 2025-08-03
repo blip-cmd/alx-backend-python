@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.contrib.auth import logout
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from .models import Message, MessageHistory, Notification
 import json
 
@@ -18,8 +18,8 @@ def message_list(request):
     """
     messages = (
         Message.objects.filter(Q(sender=request.user) | Q(receiver=request.user))
-        .select_related("sender", "receiver")
-        .prefetch_related("edit_history")
+        .select_related("sender", "receiver", "parent_message")
+        .prefetch_related("replies", "edit_history")
     )
 
     context = {
@@ -239,23 +239,52 @@ def delete_user(request):
                 return redirect("messaging:message_list")
 
             except Exception as e:
-                messages.error(
-                    request, f"An error occurred while deleting your account: {str(e)}"
+                error_message = (
+                    f"An error occurred while deleting your account: {str(e)}"
                 )
+                messages.error(request, error_message)
                 return render(
                     request,
                     "messaging/delete_user.html",
-                    {
-                        "error": f"An error occurred while deleting your account: {str(e)}"
-                    },
+                    {"error": error_message},
                 )
         else:
-            # Confirmation didn't match
             return render(
                 request,
                 "messaging/delete_user.html",
                 {"error": "Please type 'delete' to confirm account deletion."},
             )
 
-    # GET request - show the confirmation form
-    return render(request, "messaging/delete_user.html")
+    return render(request, "messaging/delete_user.html", {})
+
+
+@login_required
+def threaded_conversation(request, message_id):
+    """
+    Fetch all replies to a message recursively and display them in a threaded format.
+    """
+    message = get_object_or_404(Message, id=message_id)
+
+    # Check if user has permission to view this message
+    if message.sender != request.user and message.receiver != request.user:
+        return HttpResponseForbidden(
+            "You don't have permission to view this conversation."
+        )
+
+    def fetch_replies(message):
+        replies = message.replies.prefetch_related(
+            Prefetch(
+                "replies", queryset=Message.objects.select_related("sender", "receiver")
+            )
+        )
+        for reply in replies:
+            reply.threaded_replies = fetch_replies(reply)
+        return replies
+
+    threaded_replies = fetch_replies(message)
+
+    context = {
+        "message": message,
+        "threaded_replies": threaded_replies,
+    }
+    return render(request, "messaging/threaded_conversation.html", context)

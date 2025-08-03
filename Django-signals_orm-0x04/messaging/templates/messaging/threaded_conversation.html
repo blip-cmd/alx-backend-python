@@ -1,0 +1,16 @@
+{% extends 'messaging/base.html' %} {% block content %}
+<h2>Threaded Conversation</h2>
+<div>
+  <strong>Original Message:</strong>
+  <div style="margin-left: 20px">
+    <p><b>{{ message.sender.username }}</b>: {{ message.content }}</p>
+    <small>{{ message.timestamp }}</small>
+  </div>
+  <hr />
+  <h4>Replies:</h4>
+  <div>
+    {% include 'messaging/threaded_replies.html' with replies=threaded_replies
+    level=1 %}
+  </div>
+</div>
+{% endblock %}
