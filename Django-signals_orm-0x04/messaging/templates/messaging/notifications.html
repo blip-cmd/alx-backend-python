@@ -1,0 +1,194 @@
+{% extends 'messaging/base.html' %} {% block title %}Notifications - Messaging
+System{% endblock %} {% block content %}
+<div class="row">
+  <div class="col-lg-12">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2><i class="fas fa-bell"></i> Your Notifications</h2>
+      <div>
+        <button
+          class="btn btn-outline-secondary btn-sm"
+          onclick="markAllRead()"
+        >
+          <i class="fas fa-check-double"></i> Mark All as Read
+        </button>
+      </div>
+    </div>
+
+    {% if notifications %}
+    <div class="list-group">
+      {% for notification in notifications %}
+      <div
+        class="list-group-item {% if not notification.is_read %}list-group-item-info{% endif %}"
+      >
+        <div class="d-flex w-100 justify-content-between align-items-start">
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center mb-2">
+              {% if not notification.is_read %}
+              <span class="badge bg-primary me-2">New</span>
+              {% endif %}
+              <h6 class="mb-0">
+                <i class="fas fa-envelope"></i>
+                New message from {{ notification.message.sender.username }}
+              </h6>
+            </div>
+
+            <p class="mb-2">
+              {% if notification.message.content|length > 100 %} {{
+              notification.message.content|slice:":100" }}... {% else %} {{
+              notification.message.content }} {% endif %}
+            </p>
+
+            <small class="text-muted">
+              <i class="fas fa-clock"></i>
+              {{ notification.created_at|date:"F d, Y \a\t H:i" }}
+            </small>
+          </div>
+
+          <div class="text-end">
+            <a
+              href="{% url 'messaging:message_detail' notification.message.id %}"
+              class="btn btn-sm btn-outline-primary mb-1"
+            >
+              <i class="fas fa-eye"></i> View Message
+            </a>
+
+            {% if not notification.is_read %}
+            <button
+              class="btn btn-sm btn-outline-success"
+              onclick="markAsRead({{ notification.id }})"
+            >
+              <i class="fas fa-check"></i> Mark as Read
+            </button>
+            {% else %}
+            <span class="badge bg-success">
+              <i class="fas fa-check"></i> Read
+            </span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mt-4">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body text-center">
+            <h5 class="card-title">Total Notifications</h5>
+            <h2 class="text-primary">{{ notifications.count }}</h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body text-center">
+            <h5 class="card-title">Unread</h5>
+            <h2 class="text-warning">
+              {% with unread_count=notifications|length %} {% for notification
+              in notifications %} {% if not notification.is_read %} {% if
+              forloop.first %}1{% else %}{{ forloop.counter }}{% endif %} {%
+              endif %} {% empty %} 0 {% endfor %} {% endwith %}
+            </h2>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+      <i class="fas fa-bell-slash fa-5x text-muted mb-3"></i>
+      <h4 class="text-muted">No notifications yet</h4>
+      <p class="text-muted">
+        You'll see notifications here when you receive new messages.
+      </p>
+      <a href="{% url 'messaging:message_list' %}" class="btn btn-primary">
+        <i class="fas fa-inbox"></i> Check Your Messages
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  function markAsRead(notificationId) {
+    fetch(`/messaging/api/notification/${notificationId}/read/`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          location.reload();
+        } else {
+          alert(data.error || "Error marking notification as read");
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("Error marking notification as read");
+      });
+  }
+
+  function markAllRead() {
+    const unreadNotifications = document.querySelectorAll(
+      ".list-group-item-info"
+    );
+    if (unreadNotifications.length === 0) {
+      alert("No unread notifications to mark as read");
+      return;
+    }
+
+    if (
+      confirm(
+        `Mark all ${unreadNotifications.length} unread notifications as read?`
+      )
+    ) {
+      // This would require a bulk endpoint, for now just reload
+      // In a real implementation, you'd create a bulk mark-as-read endpoint
+      Promise.all(
+        Array.from(unreadNotifications).map((item) => {
+          const button = item.querySelector('button[onclick*="markAsRead"]');
+          if (button) {
+            const notificationId = button
+              .getAttribute("onclick")
+              .match(/\d+/)[0];
+            return fetch(
+              `/messaging/api/notification/${notificationId}/read/`,
+              {
+                method: "POST",
+                headers: {
+                  "X-CSRFToken": getCookie("csrftoken"),
+                },
+              }
+            );
+          }
+        })
+      )
+        .then(() => {
+          location.reload();
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("Error marking notifications as read");
+        });
+    }
+  }
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === name + "=") {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+</script>
+{% endblock %}

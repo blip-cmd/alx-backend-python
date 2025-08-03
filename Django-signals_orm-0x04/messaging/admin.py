@@ -63,8 +63,8 @@ class MessageHistoryInline(admin.TabularInline):
 
     model = MessageHistory
     extra = 0
-    readonly_fields = ("old_content", "edited_at")
-    fields = ("old_content", "edited_at")
+    readonly_fields = ("old_content", "edited_by", "edited_at")
+    fields = ("old_content", "edited_by", "edited_at")
     ordering = ("-edited_at",)
 
 
@@ -74,10 +74,10 @@ class MessageHistoryAdmin(admin.ModelAdmin):
     Admin configuration for MessageHistory model.
     """
 
-    list_display = ("message_preview", "content_preview", "edited_at")
-    list_filter = ("edited_at",)
-    search_fields = ("message__content", "old_content")
-    readonly_fields = ("message", "old_content", "edited_at")
+    list_display = ("message_preview", "content_preview", "edited_by", "edited_at")
+    list_filter = ("edited_at", "edited_by")
+    search_fields = ("message__content", "old_content", "edited_by__username")
+    readonly_fields = ("message", "old_content", "edited_by", "edited_at")
     ordering = ("-edited_at",)
 
     def message_preview(self, obj):

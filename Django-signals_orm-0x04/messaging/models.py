@@ -36,6 +36,24 @@ class Message(models.Model):
     def __str__(self):
         return f"Message from {self.sender.username} to {self.receiver.username} at {self.timestamp}"
 
+    def edit_content(self, new_content, edited_by):
+        """
+        Edit the message content and create a history entry.
+
+        Args:
+            new_content (str): The new content for the message
+            edited_by (User): The user making the edit
+        """
+        if self.content != new_content:
+            # Create history entry before changing content
+            MessageHistory.objects.create(
+                message=self, old_content=self.content, edited_by=edited_by
+            )
+            # Update the message
+            self.content = new_content
+            self.edited = True
+            self.save()
+
 
 class MessageHistory(models.Model):
     """
@@ -50,6 +68,12 @@ class MessageHistory(models.Model):
         help_text="The message this history entry belongs to",
     )
     old_content = models.TextField(help_text="Previous content of the message")
+    edited_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="message_edits",
+        help_text="User who made this edit",
+    )
     edited_at = models.DateTimeField(
         default=timezone.now, help_text="When the message was edited"
     )

@@ -1,0 +1,263 @@
+{% extends 'messaging/base.html' %} {% block title %}Message Details - Messaging
+System{% endblock %} {% block content %}
+<div class="row">
+  <div class="col-lg-8">
+    <!-- Message Content -->
+    <div class="card mb-4">
+      <div
+        class="card-header d-flex justify-content-between align-items-center"
+      >
+        <div>
+          <h5 class="mb-0">
+            {% if message.sender == user %}
+            <i class="fas fa-arrow-right text-success"></i>
+            Message to {{ message.receiver.username }} {% else %}
+            <i class="fas fa-arrow-left text-primary"></i>
+            Message from {{ message.sender.username }} {% endif %}
+          </h5>
+          <small class="text-muted"
+            >{{ message.timestamp|date:"F d, Y \a\t H:i" }}</small
+          >
+        </div>
+        <div>
+          {% if message.edited %}
+          <span class="badge bg-warning">
+            <i class="fas fa-edit"></i> Edited
+          </span>
+          {% endif %} {% if can_edit %}
+          <button
+            class="btn btn-sm btn-outline-primary"
+            onclick="editMessage()"
+          >
+            <i class="fas fa-edit"></i> Edit
+          </button>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div id="messageContent" class="message-content">
+          {{ message.content|linebreaks }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit History -->
+    {% if message.edited and edit_history %}
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-history"></i> Edit History
+          <span class="badge bg-secondary ms-2"
+            >{{ edit_history.count }} edit{{ edit_history.count|pluralize
+            }}</span
+          >
+        </h5>
+      </div>
+
+      <div class="card-body">
+        <div class="timeline">
+          {% for history in edit_history %}
+          <div class="history-item p-3 mb-3 rounded">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <strong>{{ history.edited_by.username }}</strong>
+                <small class="text-muted">edited this message</small>
+              </div>
+              <small class="text-muted">
+                <i class="fas fa-clock"></i>
+                {{ history.edited_at|date:"M d, Y H:i" }}
+              </small>
+            </div>
+
+            <div class="old-content bg-light p-2 rounded">
+              <small class="text-muted d-block mb-1">Previous content:</small>
+              {{ history.old_content|linebreaks }}
+            </div>
+          </div>
+          {% endfor %}
+
+          <!-- Original message -->
+          <div class="history-item p-3 rounded bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <strong>{{ message.sender.username }}</strong>
+                <small>created this message</small>
+              </div>
+              <small>
+                <i class="fas fa-clock"></i>
+                {{ message.timestamp|date:"M d, Y H:i" }}
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Sidebar -->
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="mb-0">
+          <i class="fas fa-info-circle"></i> Message Information
+        </h6>
+      </div>
+      <div class="card-body">
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <strong>From:</strong> {{ message.sender.username }}
+          </li>
+          <li class="mb-2">
+            <strong>To:</strong> {{ message.receiver.username }}
+          </li>
+          <li class="mb-2">
+            <strong>Sent:</strong> {{ message.timestamp|date:"F d, Y \a\t H:i"
+            }}
+          </li>
+          <li class="mb-2">
+            <strong>Status:</strong>
+            {% if message.edited %}
+            <span class="badge bg-warning">Edited</span>
+            {% else %}
+            <span class="badge bg-success">Original</span>
+            {% endif %}
+          </li>
+          {% if message.edited %}
+          <li class="mb-2">
+            <strong>Edit Count:</strong> {{ edit_history.count }}
+          </li>
+          {% if edit_history.first %}
+          <li class="mb-2">
+            <strong>Last Edited:</strong> {{
+            edit_history.first.edited_at|date:"M d, Y H:i" }}
+          </li>
+          <li class="mb-2">
+            <strong>Last Edited By:</strong> {{
+            edit_history.first.edited_by.username }}
+          </li>
+          {% endif %} {% endif %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <a
+        href="{% url 'messaging:message_list' %}"
+        class="btn btn-outline-secondary"
+      >
+        <i class="fas fa-arrow-left"></i> Back to Messages
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editMessageModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Message</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form id="editMessageForm">
+          <div class="mb-3">
+            <label for="messageEditContent" class="form-label"
+              >Message Content</label
+            >
+            <textarea
+              class="form-control"
+              id="messageEditContent"
+              rows="6"
+              required
+            >
+{{ message.content }}</textarea
+            >
+            <div class="form-text">
+              Make your changes above. Previous content will be saved in the
+              edit history.
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" id="saveMessageBtn">
+          <i class="fas fa-save"></i> Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  function editMessage() {
+    const modal = new bootstrap.Modal(
+      document.getElementById("editMessageModal")
+    );
+    modal.show();
+  }
+
+  document
+    .getElementById("saveMessageBtn")
+    .addEventListener("click", function () {
+      const content = document
+        .getElementById("messageEditContent")
+        .value.trim();
+      if (!content) {
+        alert("Message content cannot be empty");
+        return;
+      }
+
+      fetch(`/messaging/message/{{ message.id }}/edit/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify({
+          content: content,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            const modal = bootstrap.Modal.getInstance(
+              document.getElementById("editMessageModal")
+            );
+            modal.hide();
+            location.reload(); // Reload to show changes and updated history
+          } else {
+            alert(data.error || "Error updating message");
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("Error updating message");
+        });
+    });
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === name + "=") {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+</script>
+{% endblock %}

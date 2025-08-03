@@ -187,10 +187,12 @@ class MessageHistoryModelTest(TestCase):
         history = MessageHistory.objects.create(
             message=self.message,
             old_content="Previous content",
+            edited_by=self.sender,
         )
 
         self.assertEqual(history.message, self.message)
         self.assertEqual(history.old_content, "Previous content")
+        self.assertEqual(history.edited_by, self.sender)
         self.assertIsNotNone(history.edited_at)
 
     def test_message_history_str_representation(self):
@@ -198,6 +200,7 @@ class MessageHistoryModelTest(TestCase):
         history = MessageHistory.objects.create(
             message=self.message,
             old_content="Previous content",
+            edited_by=self.sender,
         )
 
         expected_str = (
@@ -212,6 +215,7 @@ class MessageHistoryModelTest(TestCase):
             MessageHistory.objects.create(
                 message=self.message,
                 old_content=f"Content version {i}",
+                edited_by=self.sender,
             )
 
         # Test the reverse relationship
@@ -304,6 +308,50 @@ class MessageEditSignalTest(TestCase):
 
         for i, history in enumerate(histories):
             self.assertEqual(history.old_content, expected_contents[i])
+
+    def test_edit_content_method(self):
+        """Test the custom edit_content method that tracks who made the edit."""
+        # Create a message
+        message = Message.objects.create(
+            sender=self.sender,
+            receiver=self.receiver,
+            content="Original content",
+        )
+
+        # Initially, there should be no history entries
+        self.assertEqual(MessageHistory.objects.count(), 0)
+        self.assertFalse(message.edited)
+
+        # Edit the message using the custom method
+        message.edit_content("Edited content", self.sender)
+
+        # Check that a history entry was created with the correct editor
+        self.assertEqual(MessageHistory.objects.count(), 1)
+        history = MessageHistory.objects.first()
+        self.assertEqual(history.message, message)
+        self.assertEqual(history.old_content, "Original content")
+        self.assertEqual(history.edited_by, self.sender)
+
+        # Verify the message is marked as edited and content updated
+        message.refresh_from_db()
+        self.assertTrue(message.edited)
+        self.assertEqual(message.content, "Edited content")
+
+    def test_edit_content_method_no_change(self):
+        """Test that edit_content doesn't create history if content doesn't change."""
+        # Create a message
+        message = Message.objects.create(
+            sender=self.sender,
+            receiver=self.receiver,
+            content="Original content",
+        )
+
+        # Try to "edit" with the same content
+        message.edit_content("Original content", self.sender)
+
+        # Verify no history was created
+        self.assertEqual(MessageHistory.objects.count(), 0)
+        self.assertFalse(message.edited)
 
     def test_no_history_on_new_message_creation(self):
         """Test that no history is created when a new message is created."""

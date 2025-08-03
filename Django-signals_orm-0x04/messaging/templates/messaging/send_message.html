@@ -1,0 +1,81 @@
+{% extends 'messaging/base.html' %}
+
+{% block title %}Send Message - Messaging System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-paper-plane"></i> Send New Message
+                </h4>
+            </div>
+            
+            <div class="card-body">
+                {% if error %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                    </div>
+                {% endif %}
+                
+                {% if success %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> {{ success }}
+                    </div>
+                {% endif %}
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="receiver_username" class="form-label">
+                            <i class="fas fa-user"></i> Send to:
+                        </label>
+                        <select class="form-select" id="receiver_username" name="receiver_username" required>
+                            <option value="">Choose a recipient...</option>
+                            {% for user_option in users %}
+                                <option value="{{ user_option.username }}" 
+                                    {% if receiver_username == user_option.username %}selected{% endif %}>
+                                    {{ user_option.username }}
+                                    {% if user_option.first_name or user_option.last_name %}
+                                        ({{ user_option.first_name }} {{ user_option.last_name }})
+                                    {% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="content" class="form-label">
+                            <i class="fas fa-comment"></i> Message:
+                        </label>
+                        <textarea class="form-control" id="content" name="content" rows="6" 
+                                placeholder="Type your message here..." required>{{ content }}</textarea>
+                        <div class="form-text">Write your message content above.</div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'messaging:message_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Messages
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Send Message
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-resize textarea
+document.getElementById('content').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = (this.scrollHeight) + 'px';
+});
+</script>
+{% endblock %}
