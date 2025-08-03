@@ -11,7 +11,11 @@ def main():
 
     print("\n1. SIGNAL IMPLEMENTATION:")
     print("   ✓ Added post_delete signal for User model")
-    print("   ✓ Signal automatically cleans up related data")
+    print("   ✓ Signal explicitly deletes related data using:")
+    print("     - Message.objects.filter(sender=user).delete()")
+    print("     - Message.objects.filter(receiver=user).delete()")
+    print("     - Notification.objects.filter(user=user).delete()")
+    print("     - MessageHistory.objects.filter(edited_by=user).delete()")
     print("   ✓ Logs deletion process for auditing")
 
     print("\n2. VIEW IMPLEMENTATION:")
@@ -30,12 +34,13 @@ def main():
     print("   ✓ JavaScript validation for confirmation")
     print("   ✓ Added link in navigation dropdown")
 
-    print("\n5. CASCADE BEHAVIOR:")
-    print("   ✓ Models use CASCADE foreign keys")
-    print("   ✓ Related data automatically deleted:")
+    print("\n5. EXPLICIT DELETION BEHAVIOR:")
+    print("   ✓ Signal uses explicit queryset deletion")
+    print("   ✓ Related data explicitly deleted:")
     print("     - Messages (sender/receiver)")
     print("     - Notifications")
     print("     - Message edit history")
+    print("   ✓ Counts and logs deleted items")
 
     print("\n6. SAFETY FEATURES:")
     print("   ✓ Requires typing 'delete' to confirm")

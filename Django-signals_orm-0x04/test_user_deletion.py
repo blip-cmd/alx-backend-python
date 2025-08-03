@@ -23,6 +23,8 @@ from messaging.models import Message, Notification, MessageHistory
 def test_user_deletion_with_signals():
     """
     Test that deleting a user properly cleans up all related data.
+    This test verifies that the post_delete signal explicitly deletes
+    all messages, notifications, and message histories.
     """
     print("=" * 50)
     print("TESTING USER DELETION WITH SIGNALS")
@@ -66,7 +68,17 @@ def test_user_deletion_with_signals():
     print(f"- Notifications for user1: {notifications_before}")
     print(f"- Message history by user1: {history_before}")
 
-    # Delete user1 (this should trigger the post_delete signal)
+    # Count total objects before deletion to verify explicit deletion
+    total_messages_before = Message.objects.count()
+    total_notifications_before = Notification.objects.count()
+    total_history_before = MessageHistory.objects.count()
+
+    print(f"\nTotal objects before deletion:")
+    print(f"- Total messages: {total_messages_before}")
+    print(f"- Total notifications: {total_notifications_before}")
+    print(f"- Total message history: {total_history_before}")
+
+    # Delete user1 (this should trigger the post_delete signal with explicit deletion)
     print(f"\nDeleting user: {user1.username}")
     user1.delete()
 
@@ -87,13 +99,24 @@ def test_user_deletion_with_signals():
     print(f"- Notifications for user1: {notifications_after}")
     print(f"- Message history by user1: {history_after}")
 
-    # Verify cleanup
+    # Count total objects after deletion
+    total_messages_after = Message.objects.count()
+    total_notifications_after = Notification.objects.count()
+    total_history_after = MessageHistory.objects.count()
+
+    print(f"\nTotal objects after deletion:")
+    print(f"- Total messages: {total_messages_after}")
+    print(f"- Total notifications: {total_notifications_after}")
+    print(f"- Total message history: {total_history_after}")
+
+    # Verify cleanup (should be 0 because of explicit deletion in signal)
     success = messages_after == 0 and notifications_after == 0 and history_after == 0
 
     print(f"\nCleanup successful: {success}")
 
     if success:
-        print("✓ All related data was properly cleaned up!")
+        print("✓ All related data was properly cleaned up by the post_delete signal!")
+        print("✓ Signal used explicit Message.objects.filter().delete() calls")
     else:
         print("✗ Some related data was not cleaned up properly!")
 

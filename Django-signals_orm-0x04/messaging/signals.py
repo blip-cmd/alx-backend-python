@@ -87,9 +87,8 @@ def cleanup_user_related_data(sender, instance, **kwargs):
     """
     Signal handler that cleans up related data when a user is deleted.
 
-    Note: Since the models use CASCADE foreign keys, most related data
-    will be automatically deleted. This signal is here for logging
-    and any additional cleanup that might be needed.
+    This signal explicitly deletes all messages, notifications, and message histories
+    associated with the user to ensure complete cleanup.
 
     Args:
         sender: The model class (User)
@@ -101,11 +100,29 @@ def cleanup_user_related_data(sender, instance, **kwargs):
     # Log the cleanup for debugging/auditing
     print(f"Cleaning up data for deleted user: {username}")
 
-    # Note: The following cleanup is handled automatically by CASCADE:
-    # - Messages where user is sender (sent_messages)
-    # - Messages where user is receiver (received_messages)
-    # - Notifications for the user (notifications)
-    # - Message edit history where user is the editor (message_edits)
+    # Delete all messages where user is sender
+    sent_messages = Message.objects.filter(sender=instance)
+    sent_count = sent_messages.count()
+    sent_messages.delete()
+    print(f"Deleted {sent_count} sent messages")
+
+    # Delete all messages where user is receiver
+    received_messages = Message.objects.filter(receiver=instance)
+    received_count = received_messages.count()
+    received_messages.delete()
+    print(f"Deleted {received_count} received messages")
+
+    # Delete all notifications for the user
+    user_notifications = Notification.objects.filter(user=instance)
+    notification_count = user_notifications.count()
+    user_notifications.delete()
+    print(f"Deleted {notification_count} notifications")
+
+    # Delete all message edit history where user was the editor
+    user_edits = MessageHistory.objects.filter(edited_by=instance)
+    edit_count = user_edits.count()
+    user_edits.delete()
+    print(f"Deleted {edit_count} message edit history entries")
 
     # Log completion
     print(f"Cleanup completed for user: {username}")
