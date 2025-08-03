@@ -19,4 +19,4 @@ Usage:
 4. Notifications will be automatically created for message receivers
 """
 
-default_app_config = 'messaging.apps.MessagingConfig'
+default_app_config = "messaging.apps.MessagingConfig"

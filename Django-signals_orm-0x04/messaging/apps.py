@@ -6,9 +6,10 @@ class MessagingConfig(AppConfig):
     Configuration for the messaging app.
     This ensures that Django signals are properly registered when the app is loaded.
     """
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'messaging'
-    verbose_name = 'Messaging System'
+
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "messaging"
+    verbose_name = "Messaging System"
 
     def ready(self):
         """
