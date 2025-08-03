@@ -1,5 +1,6 @@
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save, pre_save, post_delete
 from django.dispatch import receiver
+from django.contrib.auth.models import User
 from .models import Message, Notification, MessageHistory
 
 
@@ -79,3 +80,32 @@ def log_message_edit_history(sender, instance, **kwargs):
         except Message.DoesNotExist:
             # This shouldn't happen, but handle gracefully
             pass
+
+
+@receiver(post_delete, sender=User)
+def cleanup_user_related_data(sender, instance, **kwargs):
+    """
+    Signal handler that cleans up related data when a user is deleted.
+
+    Note: Since the models use CASCADE foreign keys, most related data
+    will be automatically deleted. This signal is here for logging
+    and any additional cleanup that might be needed.
+
+    Args:
+        sender: The model class (User)
+        instance: The actual instance being deleted (User instance)
+        **kwargs: Additional keyword arguments
+    """
+    username = instance.username
+
+    # Log the cleanup for debugging/auditing
+    print(f"Cleaning up data for deleted user: {username}")
+
+    # Note: The following cleanup is handled automatically by CASCADE:
+    # - Messages where user is sender (sent_messages)
+    # - Messages where user is receiver (received_messages)
+    # - Notifications for the user (notifications)
+    # - Message edit history where user is the editor (message_edits)
+
+    # Log completion
+    print(f"Cleanup completed for user: {username}")

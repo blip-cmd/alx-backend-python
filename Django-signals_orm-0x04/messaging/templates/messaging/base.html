@@ -96,6 +96,15 @@
                 <li><a class="dropdown-item" href="/admin/">Admin Panel</a></li>
                 <li><hr class="dropdown-divider" /></li>
                 <li>
+                  <a
+                    class="dropdown-item text-danger"
+                    href="{% url 'messaging:delete_user' %}"
+                  >
+                    <i class="fas fa-trash me-2"></i>Delete Account
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
                   <a class="dropdown-item" href="/admin/logout/">Logout</a>
                 </li>
               </ul>

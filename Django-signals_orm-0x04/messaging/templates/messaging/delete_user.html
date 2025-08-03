@@ -1,0 +1,123 @@
+{% extends "messaging/base.html" %} {% block title %}Delete Account{% endblock
+%} {% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+          <h4 class="mb-0">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Delete Account
+          </h4>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-danger" role="alert">
+            <h5 class="alert-heading">
+              <i class="fas fa-warning me-2"></i>
+              Warning: This action cannot be undone!
+            </h5>
+            <p class="mb-0">Deleting your account will permanently remove:</p>
+            <ul class="mt-2">
+              <li>All your sent and received messages</li>
+              <li>All your notifications</li>
+              <li>All message edit history associated with your account</li>
+              <li>Your user profile and login credentials</li>
+            </ul>
+          </div>
+
+          {% if error %}
+          <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            {{ error }}
+          </div>
+          {% endif %}
+
+          <form method="post" class="mt-4">
+            {% csrf_token %}
+
+            <div class="mb-3">
+              <p class="fw-bold">
+                Current User:
+                <span class="text-primary">{{ user.username }}</span>
+              </p>
+            </div>
+
+            <div class="mb-3">
+              <label for="confirmation" class="form-label">
+                To confirm deletion, please type <strong>"delete"</strong> in
+                the box below:
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                id="confirmation"
+                name="confirmation"
+                placeholder="Type 'delete' to confirm"
+                required
+              />
+            </div>
+
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-danger">
+                <i class="fas fa-trash me-2"></i>
+                Delete My Account Permanently
+              </button>
+              <a
+                href="{% url 'messaging:message_list' %}"
+                class="btn btn-secondary"
+              >
+                <i class="fas fa-arrow-left me-2"></i>
+                Cancel and Go Back
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+    const confirmationInput = document.getElementById("confirmation");
+    const submitButton = document.querySelector('button[type="submit"]');
+
+    // Add real-time validation
+    confirmationInput.addEventListener("input", function () {
+      if (this.value.toLowerCase() === "delete") {
+        submitButton.disabled = false;
+        submitButton.classList.remove("btn-secondary");
+        submitButton.classList.add("btn-danger");
+      } else {
+        submitButton.disabled = true;
+        submitButton.classList.remove("btn-danger");
+        submitButton.classList.add("btn-secondary");
+      }
+    });
+
+    // Initial state
+    submitButton.disabled = true;
+    submitButton.classList.remove("btn-danger");
+    submitButton.classList.add("btn-secondary");
+
+    // Confirm on submit
+    form.addEventListener("submit", function (e) {
+      if (confirmationInput.value.toLowerCase() !== "delete") {
+        e.preventDefault();
+        alert('Please type "delete" to confirm account deletion.');
+        return false;
+      }
+
+      if (
+        !confirm(
+          "Are you absolutely sure you want to delete your account? This action cannot be undone!"
+        )
+      ) {
+        e.preventDefault();
+        return false;
+      }
+    });
+  });
+</script>
+{% endblock %}
