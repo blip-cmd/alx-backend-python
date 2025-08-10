@@ -2,12 +2,15 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django_filters.rest_framework import DjangoFilterBackend
 from .models import Conversation, Message, User
 from .serializers import ConversationSerializer, MessageSerializer
 
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
     serializer_class = ConversationSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['conversation_id', 'participants']
 
     def create(self, request, *args, **kwargs):
         participants_ids = request.data.get('participants', [])
@@ -24,6 +27,8 @@ class ConversationViewSet(viewsets.ModelViewSet):
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['message_id', 'sender', 'conversation', 'message_body']
 
     def create(self, request, *args, **kwargs):
         sender_id = request.data.get('sender')
