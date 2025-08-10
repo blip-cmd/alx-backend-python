@@ -71,13 +71,21 @@ TEMPLATES = [
 WSGI_APPLICATION = 'messaging_app.wsgi.application'
 
 
+
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+import os
+from dotenv import load_dotenv
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('DJANGO_DB_NAME', 'messaging_db'),
+        'USER': os.getenv('DJANGO_DB_USER', 'messaging_user'),
+        'PASSWORD': os.getenv('DJANGO_DB_PASSWORD', 'messaging_pass'),
+        'HOST': os.getenv('DJANGO_DB_HOST', 'db'),
+        'PORT': os.getenv('DJANGO_DB_PORT', '3306'),
     }
 }
 
