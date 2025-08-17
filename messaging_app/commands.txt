@@ -1,0 +1,2 @@
+# Command to apply the Ingress configuration
+kubectl apply -f ingress.yaml
