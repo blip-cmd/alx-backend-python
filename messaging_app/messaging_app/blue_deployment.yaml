@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: django-messaging-app
-        image: your-dockerhub-username/django-messaging-app:blue # Replace with your Docker image
+        image: your-dockerhub-username/django-messaging-app:2.0 # Updated to version 2.0
         ports:
         - containerPort: 8000
         env:
