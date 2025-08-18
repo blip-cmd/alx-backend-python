@@ -7,6 +7,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import Conversation, Message, User
 from .serializers import ConversationSerializer, MessageSerializer
 from .permissions import IsParticipantOfConversation
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+
 
 
 class ConversationViewSet(viewsets.ModelViewSet):
@@ -14,7 +17,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
     serializer_class = ConversationSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['conversation_id', 'participants']
-    permission_classes = [IsParticipantOfConversation]
+    permission_classes = [IsAuthenticated, IsParticipantOfConversation]
 
     def create(self, request, *args, **kwargs):
         participants_ids = request.data.get('participants', [])
@@ -34,7 +37,17 @@ class MessageViewSet(viewsets.ModelViewSet):
     serializer_class = MessageSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['message_id', 'sender', 'conversation', 'message_body']
-    permission_classes = [IsParticipantOfConversation]
+    permission_classes = [IsAuthenticated, IsParticipantOfConversation]
+
+    def get_queryset(self):
+        # Only return messages for conversations the user participates in
+        return Message.objects.filter(conversation__participants=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not self.check_object_permissions(request, instance):
+            return Response({'detail': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+        return super().destroy(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         sender_id = request.data.get('sender')
