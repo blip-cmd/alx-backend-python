@@ -2,7 +2,11 @@ pipeline {
     agent any
     environment {
         // Set environment variables if needed
-        DOCKER_IMAGE = "yourdockerhubusername/messaging_app:${env.BUILD_NUMBER}"
+        DOCKERHUB_USERNAME = credentials('dockerhub-username-only')
+        DOCKERHUB_USER = credentials('dockerhub-username-only')
+        DOCKERHUB_PASS = credentials('dockerhub-password-only')
+        GITHUB_CREDENTIALS_ID = credentials('github-credentials-id')
+        DOCKER_IMAGE = "${env.DOCKERHUB_USERNAME}/messaging_app:${env.BUILD_NUMBER}"
     }
     stages {
         stage('Checkout') {
