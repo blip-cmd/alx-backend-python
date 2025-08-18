@@ -1,3 +1,18 @@
 # Freeze all dependencies for the Django messaging app
 Django>=3.2,<5.0
-# Add other dependencies below as needed
+djangorestframework>=3.14.0
+python-dotenv>=0.19.0
+mysqlclient>=2.1.0
+
+# Testing dependencies
+pytest>=7.0.0
+pytest-django>=4.5.0
+pytest-cov>=4.0.0
+coverage>=6.0.0
+
+# Code quality tools
+flake8>=5.0.0
+black>=22.0.0
+
+# Development dependencies
+gunicorn>=20.1.0
