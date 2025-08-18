@@ -8,11 +8,12 @@ pipeline {
         stage('Checkout') {
             steps {
                 git credentialsId: 'github-credentials-id', url: 'https://github.com/blip-cmd/alx-backend-python.git', branch: 'master'
+                sh 'git branch'
             }
         }
         stage('Install Dependencies') {
             steps {
-                sh 'pip install -r messaging_app/requirements.txt'
+                sh 'pip3 install -r messaging_app/requirements.txt'
             }
         }
         stage('Run Tests') {
