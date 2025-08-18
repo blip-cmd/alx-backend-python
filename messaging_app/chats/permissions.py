@@ -6,6 +6,9 @@ class IsParticipantOfConversation(permissions.BasePermission):
     Allows only participants of a conversation to access/modify messages/conversations.
     """
     def has_object_permission(self, request, view, obj):
+        # Require authentication
+        if not request.user or not request.user.is_authenticated:
+            return False
         # Allow safe methods for participants
         if hasattr(obj, 'participants'):
             is_participant = request.user in obj.participants.all()
