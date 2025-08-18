@@ -10,61 +10,63 @@ on:
 
 jobs:
   test:
-    name: CI
-
-        uses: actions/upload-artifact@v4
-      push:
-        paths:
-          - 'messaging_app/**'
-      pull_request:
-        paths:
-          - 'messaging_app/**'
-
-        with:
-      test:
-        runs-on: ubuntu-latest
-        services:
-          mysql:
-            image: mysql:5.7
-            env:
-              MYSQL_ROOT_PASSWORD: root
-              MYSQL_DATABASE: test_db
-            ports:
-              - 3306:3306
-            options: >-
-              --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=3
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:5.7
         env:
-          DATABASE_URL: mysql://root:root@localhost:3306/test_db
-        steps:
-          - uses: actions/checkout@v4
-          - name: Set up Python
-            uses: actions/setup-python@v5
-            with:
-              python-version: '3.10'
-          - name: Install dependencies
-            run: |
-              python -m pip install --upgrade pip
-              pip install -r messaging_app/requirements.txt
-          - name: Wait for MySQL
-            run: |
-              for i in {1..30}; do
-                if mysqladmin ping -h "127.0.0.1" --silent; then
-                  break
-                fi
-                sleep 2
-              done
-          - name: Run migrations
-            run: |
-              cd messaging_app
-              python manage.py migrate
-          - name: Run tests
-            run: |
-              cd messaging_app
-              pytest --junitxml=pytest-report.xml
-          - name: Upload test report
-            uses: actions/upload-artifact@v4
-            with:
-              name: pytest-report
-              path: messaging_app/pytest-report.xml
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test_db
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=3
+    env:
+      DATABASE_URL: mysql://root:root@localhost:3306/test_db
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r messaging_app/requirements.txt
+      - name: Wait for MySQL
+        run: |
+          for i in {1..30}; do
+            if mysqladmin ping -h "127.0.0.1" --silent; then
+              break
+            fi
+            sleep 2
+          done
+      - name: Run migrations
+        run: |
+          cd messaging_app
+          python manage.py migrate
+      - name: Lint with flake8
+        run: |
+          pip install flake8
+          flake8 messaging_app/ --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 messaging_app/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Run tests
+        run: |
+          cd messaging_app
+          pytest --junitxml=pytest-report.xml
+      - name: Generate coverage report
+        run: |
+          pip install coverage
+          cd messaging_app
+          coverage run -m pytest
+          coverage xml
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report
+          path: messaging_app/pytest-report.xml
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
           name: coverage-report
           path: messaging_app/coverage.xml
