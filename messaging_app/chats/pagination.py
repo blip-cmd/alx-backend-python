@@ -6,5 +6,7 @@ class MessagePagination(PageNumberPagination):
     max_page_size = 100
 
     def get_paginated_response(self, data):
-        return super().get_paginated_response(data)
-        # To access total count: self.page.paginator.count
+        response = super().get_paginated_response(data)
+        # Add total count to the response
+        response.data['total_count'] = self.page.paginator.count
+        return response
