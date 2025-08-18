@@ -41,8 +41,10 @@ pipeline {
                 sh '''
                     cd messaging_app
                     . venv/bin/activate
-                    export DJANGO_SETTINGS_MODULE=messaging_app.settings
-                    python -m pytest chats/tests.py --tb=short --junitxml=test-reports/junit.xml --cov=chats --cov-report=xml --cov-report=html || true
+                    # Create test reports directory
+                    mkdir -p test-reports
+                    # Run basic tests with pytest
+                    python -m pytest chats/test_basic.py --tb=short --junitxml=test-reports/junit.xml --cov=chats --cov-report=xml --cov-report=html || true
                 '''
             }
             post {

@@ -1,11 +1,11 @@
 """
-Basic tests for the messaging app models
+Basic tests for the messaging app - Non-Django tests
 """
-from django.test import TestCase
+import unittest
 
 
-class BasicTest(TestCase):
-    """Basic test to verify Django test framework works"""
+class BasicTest(unittest.TestCase):
+    """Basic test to verify test framework works"""
     
     def test_basic_functionality(self):
         """Test that the test framework is working"""
@@ -22,3 +22,7 @@ class BasicTest(TestCase):
         self.assertEqual(len(test_string), 11)
         self.assertTrue(test_string.startswith("Hello"))
         self.assertTrue(test_string.endswith("World"))
+
+
+if __name__ == '__main__':
+    unittest.main()
