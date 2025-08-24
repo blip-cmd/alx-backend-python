@@ -41,6 +41,9 @@ INSTALLED_APPS = [
     'chats',
 ]
 
+# Custom user model
+AUTH_USER_MODEL = 'chats.User'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -88,6 +91,14 @@ DATABASES = {
         'PORT': os.getenv('DJANGO_DB_PORT', '3306'),
     }
 }
+
+# Use SQLite for testing to avoid MySQL dependency
+import sys
+if 'test' in sys.argv or 'pytest' in sys.modules:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:'
+    }
 
 
 # Password validation
