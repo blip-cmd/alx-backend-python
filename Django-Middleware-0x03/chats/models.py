@@ -7,10 +7,30 @@ class User(AbstractUser):
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, db_index=True)
     email = models.EmailField(unique=True, null=False, db_index=True)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
-    role = models.CharField(max_length=10, choices=[('guest', 'Guest'), ('host', 'Host'), ('admin', 'Admin')], null=False)
+    role = models.CharField(
+        max_length=10, 
+        choices=[('guest', 'Guest'), ('host', 'Host'), ('admin', 'Admin'), ('moderator', 'Moderator')], 
+        null=False
+    )
     created_at = models.DateTimeField(auto_now_add=True)
-    # first_name, last_name, password are inherited from AbstractUser
-    # password_hash is handled by Django's password field
+    
+    # Add related_name to avoid conflicts with Django's default User model
+    groups = models.ManyToManyField(
+        'auth.Group',
+        verbose_name='groups',
+        blank=True,
+        help_text='The groups this user belongs to.',
+        related_name='chat_users',
+        related_query_name='chat_user',
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        verbose_name='user permissions',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        related_name='chat_users',
+        related_query_name='chat_user',
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name', 'role']
