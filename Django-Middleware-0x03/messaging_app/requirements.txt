@@ -1,0 +1,3 @@
+# Freeze all dependencies for the Django messaging app
+Django>=3.2,<5.0
+# Add other dependencies below as needed

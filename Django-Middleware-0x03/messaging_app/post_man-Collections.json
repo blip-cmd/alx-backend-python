@@ -1,0 +1,124 @@
+{
+  "info": {
+    "_postman_id": "d1e1b1c2-1234-5678-9101-abcdefabcdef",
+    "name": "Messaging App API Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Obtain JWT Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/token/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "token", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Conversation",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"participants\": [\"{{user_id}}\", \"{{other_user_id}}\"]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/conversations/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "conversations", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Send Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sender\": \"{{user_id}}\",\n  \"conversation\": \"{{conversation_id}}\",\n  \"message_body\": \"Hello!\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/messages/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "messages", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Conversations",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/conversations/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "conversations", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fetch Messages (Paginated & Filtered)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/messages/?conversation={{conversation_id}}&page=1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "messages", ""],
+          "query": [
+            { "key": "conversation", "value": "{{conversation_id}}" },
+            { "key": "page", "value": "1" }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Unauthorized Fetch Conversations",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/conversations/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "conversations", ""]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000" },
+    { "key": "user_email", "value": "user@example.com" },
+    { "key": "user_password", "value": "password" },
+    { "key": "user_id", "value": "" },
+    { "key": "other_user_id", "value": "" },
+    { "key": "access_token", "value": "" },
+    { "key": "conversation_id", "value": "" }
+  ]
+}

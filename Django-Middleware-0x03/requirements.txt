@@ -1,0 +1,10 @@
+# Django messaging app dependencies
+Django>=4.2,<5.0
+djangorestframework>=3.14.0
+django-filter>=22.1
+python-dotenv>=1.0.0
+mysqlclient>=2.1.1  # For MySQL database (optional)
+
+# Development dependencies
+pytest>=7.0.0
+pytest-django>=4.5.0

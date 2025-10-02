@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Deploy the blue version
+echo "Deploying the blue version..."
+kubectl apply -f blue_deployment.yaml
+
+# Deploy the green version
+echo "Deploying the green version..."
+kubectl apply -f green_deployment.yaml
+
+# Check logs for the green version
+echo "Checking logs for the green version..."
+kubectl get pods -l app=django-messaging-app,version=green -o name | xargs -I {} kubectl logs {}

@@ -1,0 +1,52 @@
+pipeline {
+    agent any
+    environment {
+        // Set environment variables if needed
+        DOCKERHUB_USERNAME = credentials('dockerhub-username-only')
+        DOCKERHUB_USER = credentials('dockerhub-username-only')
+        DOCKERHUB_PASS = credentials('dockerhub-password-only')
+        GITHUB_CREDENTIALS_ID = credentials('github-credentials-id')
+        DOCKER_IMAGE = "${env.DOCKERHUB_USERNAME}/messaging_app:${env.BUILD_NUMBER}"
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                git credentialsId: 'github-credentials-id', url: 'https://github.com/blip-cmd/alx-backend-python.git', branch: 'master'
+                sh 'git branch'
+            }
+        }
+        stage('Install Dependencies') {
+            steps {
+                sh 'pip3 install -r messaging_app/requirements.txt'
+            }
+        }
+        stage('Run Tests') {
+            steps {
+                sh 'pytest messaging_app/ --junitxml=report.xml'
+            }
+            post {
+                always {
+                    junit 'report.xml'
+                }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $DOCKER_IMAGE messaging_app/'
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials-id', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
+                    sh 'echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin'
+                    sh 'docker push $DOCKER_IMAGE'
+                }
+            }
+        }
+    }
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
