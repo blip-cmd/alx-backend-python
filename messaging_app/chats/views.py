@@ -10,8 +10,6 @@ from .permissions import IsParticipantOfConversation
 from .pagination import MessagePagination
 from .filters import MessageFilter
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-
 
 
 class ConversationViewSet(viewsets.ModelViewSet):
@@ -34,6 +32,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
     filter_backends = [DjangoFilterBackend]
