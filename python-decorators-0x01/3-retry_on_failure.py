@@ -2,7 +2,11 @@ import time
 import sqlite3
 import functools
 
-# with_db_connection decorator from previous tasks
+import time
+import sqlite3 
+import functools
+
+#### paste your with_db_decorator here
 def with_db_connection(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -13,8 +17,6 @@ def with_db_connection(func):
             conn.close()
         return result
     return wrapper
-
-# retry_on_failure decorator
 
 def retry_on_failure(retries=3, delay=2):
     def decorator(func):
@@ -27,6 +29,7 @@ def retry_on_failure(retries=3, delay=2):
                 except Exception as e:
                     last_exception = e
                     if attempt < retries:
+                        print(f"Attempt {attempt} failed, retrying in {delay} seconds...")
                         time.sleep(delay)
                     else:
                         raise last_exception
