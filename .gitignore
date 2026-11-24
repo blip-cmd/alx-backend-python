@@ -159,3 +159,10 @@ requests.log
 # Temporary files
 *.tmp
 *.temp
+
+# Generated and local files
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
